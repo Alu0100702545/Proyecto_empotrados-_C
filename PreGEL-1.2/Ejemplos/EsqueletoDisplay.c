@@ -175,7 +175,16 @@ void inicializaDisplay( ) {
     enviaComando( DL_8BITS );
 
     /*======== Resto de la inicialización ============= */
-
+    delayusg( 4100UL );
+    enviaComando( DL_8BITS );
+    delayusg( 100UL );
+    enviaComando( DL_8BITS );
+    
+    enviaComando( DL_8BITS | DISP_ON);
+    enviaComando( DISP_OFF );
+    enviaComando( CLEAR );
+    enviaComando(  SHIFT | RETURN);
+     
 
     /* Encendemos display con cursor parpadeante */
     enviaComando( DISP_ON | CUR_ON );
