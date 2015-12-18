@@ -183,7 +183,7 @@ void inicializaDisplay( ) {
     enviaComando( DL_8BITS | DISP_ON);
     enviaComando( DISP_OFF );
     enviaComando( CLEAR );
-    enviaComando(  SHIFT | RETURN);
+    enviaComando( CUR_INC );
      
 
     /* Encendemos display con cursor parpadeante */
@@ -199,8 +199,39 @@ void inicializaDisplay( ) {
 }
 
 void sacaDisplay( byte c ) {
+    char cod_ascci =c+'0';
+     /*========= Implementar el código de la función de gestión =============== */
+    switch (cod_ascii){
+        case  2  :
+            enviaComando( CLEAR );
+            break;
+        case  8  :
+            enviaComando( CLEAR );
+            break;
+        case  11 :
+            enviaComando( CLEAR );
+            break;
+        case  12 :
+            enviaComando( CLEAR );
+            break;
+        case  15 :
+            enviaComando( CLEAR );
+            break;
+        case  3  :
+            enviaComando( CLEAR );
+            break;
+        case  16 :
+            enviaComando( CLEAR );
+            break;
+        default  :
+            enviaDato( c );
+            break;
+        
+    }
+    
+    
 
-    /*========= Implementar el código de la función de gestión =============== */
+   
 
 }
 
