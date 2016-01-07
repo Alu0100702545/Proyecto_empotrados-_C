@@ -84,7 +84,7 @@ typedef unsigned short word;  /*por comodidad*/
 unsigned short Periodo; /* Ticks del temporizador que dura el periodo */
 unsigned short horas; /* Se incremente en cada interrupción */
 unsigned short minutos;
-unsigned short segundos;
+//unsigned short segundos;
 char numero[4];
 unsigned short tamano;
 unsigned short contador_alarma;
@@ -338,7 +338,7 @@ void imp_cadena(char * c, unsigned short tamano){
 int main ( ) {
     horas=0; /* Se incremente en cada interrupción */
     minutos=0;
-    segundos=0;
+    //segundos=0;
     contador_alarma=30;
     tamano=0;
     habilitado=0;
@@ -439,7 +439,7 @@ int main ( ) {
 	                    if (minutos>=60)
 	                         minutos=0;
 	            }  
-	            segundos=0;
+	            //segundos=0;
 	            unlock( );
 	        break;
 	        case '0':
@@ -478,13 +478,41 @@ int main ( ) {
     	        }
     	       habilitado=0;
 	      break;
-	        
+	      case '1':
+    	        habilitado=1;
+    	        unsigned short num =hora_alarma;
+    	        enviaComando( LINE2 );
+    	        imp_cadena("ALR :", 5);
+    	        if (hora_alarma <24){
+        	        if (num >=10){
+                        sacaDisplay(num %10 +'0');
+                        num/=10;
+                        sacaDisplay(num %10 +'0');
+             
+                    }else {
+                        sacaDisplay(num +'0');
+                        sacaDisplay('0');
+             
+                    }
+                    sacaDisplay(':' ) ;
+                    num =minutos_alarma;
+                    if (num >=10){
+                        sacaDisplay(num %10 +'0');
+                        num/=10;
+                        sacaDisplay(num %10 +'0');
+             
+                    }else {
+                        sacaDisplay(num +'0');
+                        sacaDisplay('0');
+             
+                    }
+    	        }else 
+    	            imp_cadena("OFF", 3);
+    	        c=leer_tec();
+    	       habilitado=0;
+	      break;
 	    }
-	    
-      
         _io_ports[ M6812_PORTG ] ^= M6812B_PG7;
-    
-    //serial_printdecbyte( c );
     }
 }
     
@@ -568,6 +596,9 @@ void __attribute__( ( interrupt ) ) vi_ioc2 ( void )
             sacaDisplay( 'l' );
             sacaDisplay( 'a');
             sacaDisplay( contador_alarma +'0');
+            sacaDisplay( LINE2 );
+            imp_cadena_reloj(numero);
+            contador_alarma++;
            
         }else{
             enviaComando( CLEAR );
