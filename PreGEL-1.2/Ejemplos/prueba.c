@@ -48,12 +48,9 @@ typedef unsigned short word;  /*por comodidad*/
 #define SALIDA	  (0xff)
 #define SALIDA_CONT (0xe0)
 #define INI_TEC (F1|F2|F3|F4)
-
 #define RETURN    ( 1 << 1 )
-
 #define CUR_INC    ( ( 1 << 2 ) | ( 1 << 1 ) )
 #define SHIFT    ( ( 1 << 2 ) | 1 )
-
 #define DISP_OFF    ( ( 1 << 3 ) )
 #define DISP_ON    ( ( 1 << 3 ) | ( 1 << 2 ) )
 #define CUR_ON      ( ( 1 << 3 ) | ( 1 << 1 ) )
@@ -62,7 +59,6 @@ typedef unsigned short word;  /*por comodidad*/
 #define SHIFT_DISP  ( ( 1 << 4 ) | ( 1 << 3 ) )
 #define SHIFT_LEFT  ( ( 1 << 4 ) | ( 1 << 2 ) )
 #define SHIFT_RIGHT  ( ( 1 << 4 ) )
-
 #define DL_8BITS   ( ( 1 << 5 ) | ( 1 << 4 ) )
 #define DOS_FILAS   ( ( 1 << 5 ) | ( 1 << 3 ) )
 #define FUENTE_5X10   ( ( 1 << 5 ) | ( 1 << 2 ) )
@@ -74,13 +70,15 @@ typedef unsigned short word;  /*por comodidad*/
 #define C1 M6812B_PG4
 #define C2 M6812B_PG6
 #define C3 M6812B_PG2
+
+/*************************/
+/*Constantes requeridas para las interrupciones*/
 #define  TCM_FACTOR ( 7 )  /*La potencia de 2 a aplicar al factor*/
 #define  TCM_FREQ ( M6812_CPU_E_CLOCK / ( 1 << TCM_FACTOR ) )
-/*Pasa de microsegundos a ticks*/
-#define  USG_2_TICKS(us)  ( ( us ) * ( TCM_FREQ / 1000000L ) )
-/*Pasa de milisegundos a ticks*/
-#define  MSG_2_TICKS(ms)  ( ( ms ) * ( TCM_FREQ / 1000L ) )
-
+#define  USG_2_TICKS(us)  ( ( us ) * ( TCM_FREQ / 1000000L ) )/*Pasa de microsegundos a ticks*/
+#define  MSG_2_TICKS(ms)  ( ( ms ) * ( TCM_FREQ / 1000L ) )/*Pasa de milisegundos a ticks*/
+/**************************/
+/*Declaracion de variables necesarias para el programa*/
 unsigned short Periodo; /* Ticks del temporizador que dura el periodo */
 unsigned short horas; /* Se incremente en cada interrupción */
 unsigned short minutos;
@@ -91,8 +89,6 @@ unsigned short contador_alarma;
 unsigned short hora_alarma;
 unsigned short minutos_alarma;
 unsigned short habilitado;
-
-
 
 /*
    función que realiza un retarso del el número de microsegundos indicados
@@ -162,15 +158,13 @@ void enviaComando( byte b ) {
     /* Ciclo de escritura con RS = 0 */
     _io_ports[ P_CONT ] &= ~( B_RS | B_RW );
     _io_ports[ P_DATOS ] = b;
-
     cicloAcceso( );
-
     /* Esperamos el tiempo que corresponda */
     if( ( b == 1 ) || ( ( b & 0xfe ) == 2 ) )
         delayusg( 1520UL );
     else
         delayusg( 37 );
-    //delayusg( 2000000UL );
+    
 }
 
 /* Envía un byte como dato */
@@ -189,11 +183,9 @@ void enviaDato( byte b ) {
 void inicializaDisplay( ) {
 
     /*======== Configurar puertos del display como salida ============= */
-    
     _io_ports[ P_DATOS_DDR ] = SALIDA;
     _io_ports[ P_CONT_DDR ] |= SALIDA_CONT;
     
-
     delayusg( 15000UL );
     enviaComando( DL_8BITS );//00110000
     
@@ -207,15 +199,10 @@ void inicializaDisplay( ) {
     enviaComando( DISP_OFF );//00001000
     enviaComando( CLEAR  ); //00000001
     enviaComando( CUR_INC );//00000110
-    
-
-
-
     /* Encendemos display con cursor parpadeante */
     enviaComando( DISP_ON | CUR_ON );//1110
 
     /*Sacamos mensaje */
-    
     enviaDato( 'H' );
     enviaDato( 'o' );
     enviaDato( 'l' );
@@ -229,9 +216,9 @@ char leer_tec(){
 
 	while ( ((_io_ports[ P_TEC ]) & (C1|C2|C3))){}
 	delayusg( 20000UL );
-	//algo
+	//Bucles para saber cuando se a pulsado y despulsado el boton
 	while ( !((_io_ports[ P_TEC ]) & (C1|C2|C3))){}
-    //algo
+    //Busqueda y retorno del numero pulsado.
 	delayusg( 20000UL );
 	_io_ports[ P_TEC ] = F1;
 	if (_io_ports[ P_TEC ] & C1)
@@ -302,17 +289,16 @@ void sacaDisplay( char c ) {
      }
 
 }
-
+/*Funcion de prueba para imprimir lo que venga del teclado*/
 void imp_tec( char c ){
 	  sacaDisplay( c );
 }
-
-
+/*Inicializacion del teclados*/
 void ini_tec(){
   _io_ports[ P_TEC_DDR ] = INI_TEC;
   
 }
-
+/*Para sacar cadenas por el Display en formato reloj*/
 void imp_cadena_reloj(char * c){
     unsigned short i;
     for (i=0;i<4; i++){
@@ -323,7 +309,7 @@ void imp_cadena_reloj(char * c){
     }
     
 }
-
+/*Imprime cadenas segun un tamaño pasado por el Display*/ 
 void imp_cadena(char * c, unsigned short tamano){
     unsigned short i;
     for (i=0;i<tamano; i++){
@@ -336,7 +322,8 @@ void imp_cadena(char * c, unsigned short tamano){
 
 
 int main ( ) {
-    horas=0; /* Se incremente en cada interrupción */
+    /*Inicializacion de variables*/
+    horas=0;
     minutos=0;
     //segundos=0;
     contador_alarma=30;
@@ -346,21 +333,14 @@ int main ( ) {
     minutos_alarma=0;
     /* Deshabilitamos interrupciones */
     lock ( );
-
     /* Inicializamos la serial */
     serial_init( );
     //serial_print( "\n$Id: EsqueletoDisplay.c $\n" );
-
-
     /*Encendemos led*/
     _io_ports[ M6812_DDRG ] |= M6812B_PG7;
     _io_ports[ M6812_PORTG ] |= M6812B_PG7;
-
     /* Iniciamos periodo según microsegundos que queremos que dure */
     Periodo = MSG_2_TICKS(1000UL);  /* se hace en tiempo de COMPILACION */
-    //serial_print( "\r\n usg del periodo: " );
-    //serial_printdecword( Periodo/USG_2_TICKS( 1 ) );
-
     /*Inicialización del Temporizador*/
     _io_ports[ M6812_TMSK2 ] = TCM_FACTOR;
 
@@ -370,21 +350,15 @@ int main ( ) {
 
     /*preparamos disparo*/
     _IO_PORTS_W( M6812_TC2 ) = _IO_PORTS_W( M6812_TCNT ) +Periodo;
-
-
     /*configuramos canal 2 como comparador salida*/
     _io_ports[ M6812_TIOS ] |= M6812B_IOS2;
-
 
     _io_ports[ M6812_TFLG1 ] = M6812B_IOS2; /*Bajamos el banderín de OC2 */
     _io_ports[ M6812_TMSK1 ] |= M6812B_IOS2; /*habilitamos sus interrupciones*/
     _io_ports[ M6812_TSCR ] = M6812B_TEN; /*Habilitamos temporizador*/
-
-    
+    /*inicializacion de elementos*/
     ini_tec( );
-
     inicializaDisplay( );
-
     unlock( ); /* habilitamos interrupciones */
     serial_print( "\n\rTerminada inicialización\n" );
 
@@ -392,10 +366,9 @@ int main ( ) {
         char c;
         //c = serial_recv( );
         //serial_send( c ); /* Hacemos eco para confirmar la recepción */
-	serial_print( "\n\rTerminada inicialización\n" );
+	    serial_print( "\n\rElegir opcion por teclado numerico: \n" );
         //sacaDisplay( c );
-        
-	    c= leer_tec();
+        c= leer_tec();
 	    switch (c){
 	        case '#':
 	            lock ( );
@@ -507,7 +480,7 @@ int main ( ) {
              
                     }
     	        }else 
-    	            imp_cadena("OFF", 3);
+    	            imp_cadena(" OFF", 4);
     	        c=leer_tec();
     	       habilitado=0;
 	      break;
@@ -534,6 +507,7 @@ void __attribute__( ( interrupt ) ) vi_ioc2 ( void )
                 horas=0;
         }
     }*/
+    /*Incrementamos los minutos y la hora*/
     minutos++;
         if (minutos >= 60){
             minutos =0;
@@ -542,11 +516,10 @@ void __attribute__( ( interrupt ) ) vi_ioc2 ( void )
                 horas=0;
         }
     
-    
-   unsigned short num =horas;
-    
+    /*Guardar y mostrar la hora por el Display*/
+    unsigned short num =horas;
     tamano=0;
-   unsigned short i=0;
+    unsigned short i=0;
     for (i=0; i <4;i++)
         numero[i]=0;
     if (num >=10){
