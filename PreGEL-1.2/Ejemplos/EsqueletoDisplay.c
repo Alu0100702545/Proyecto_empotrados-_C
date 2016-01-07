@@ -201,7 +201,7 @@ void inicializaDisplay( ) {
 void sacaDisplay( char c ) {
     //char cod_ascii =c+'0';
      /*========= Implementar el código de la función de gestión =============== */
-    switch (cod_ascii){
+    switch (c){
         case  2  :
             enviaComando( CLEAR );
             break;
